@@ -1,0 +1,43 @@
+# ensime
+.ensime
+.ensime/*
+.ensime_cache
+.ensime_cache/*
+
+.sbtserver
+.sbtserver/*
+
+*.class
+*.log
+/logs
+/logs/
+logs/*
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+target/*
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+project/project/target/
+project/project/target/*
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
+
+# IntelliJ specific
+.idea
+
+RUNNING_PID
+
+
+# VIM ;)
+*.swo
+*.swp
