@@ -36,7 +36,6 @@ else
 fi
 
 LOG "build.sh variables ..."
-
 echo PDIR=$PDIR
 echo DOCROOT=$DOCROOT
 echo OWNER=$OWNER
