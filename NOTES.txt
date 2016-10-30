@@ -2,22 +2,5 @@
  Source
 ========
 
-
-https://github.com/lihaoyi/workbench-example-app/blob/master/README.md
-
-http://www.scala-js.org/tutorial/basic/
-
-
-export PDIR=/home/jabdussa/cheatrz
-
-cd $PDIR/samples 
-
-git clone https://github.com/lihaoyi/workbench-example-app
-
-# git config 
-
-cd workbench-example-app
-
-sbt ~fastOptJS
-
+http://slides.com/onilton/scalajs-2016-04#/2/4
 

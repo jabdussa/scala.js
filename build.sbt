@@ -1,15 +1,25 @@
 enablePlugins(ScalaJSPlugin)
 
-name := "WWW.CHEATRZ.COM"
+name := "SCALA.JS_EXAMPLES_SCALADORES"
 
-scalaVersion := "2.11.8"
+/**
+  *
+  * Source:
+  *
+  *   https://github.com/jabdussa/scala.js/tree/scala.js_scaladores
+  *
+   */
+
+
+version := "0.1-SNAPSHOT"
+
+scalaVersion := "2.11.7"
+
+persistLauncher in Compile := true
+
+persistLauncher in Test := false
 
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-  "be.doeraene" %%% "scalajs-jquery" % "0.9.0",
-  "com.lihaoyi" %% "scalatags" % "0.6.1"
+  "org.querki" %%% "jquery-facade" % "1.0-RC2",
+  "org.scala-js" %%% "scalajs-dom" % "0.8.2"
 )
-
-//jsDependencies += RuntimeDOM
-
-//OpersistLauncher := true

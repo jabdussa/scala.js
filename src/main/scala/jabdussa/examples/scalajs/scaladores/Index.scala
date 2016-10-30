@@ -1,4 +1,4 @@
-package com.cheatrz.clients.www
+package jabdussa.examples.scalajs.scaladores
 
 import org.scalajs.dom
 import scala.scalajs.js.annotation.JSExport
