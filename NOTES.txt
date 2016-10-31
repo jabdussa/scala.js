@@ -2,22 +2,16 @@
  Source
 ========
 
-
-https://github.com/lihaoyi/workbench-example-app/blob/master/README.md
-
-http://www.scala-js.org/tutorial/basic/
+## https://github.com/lihaoyi/workbench-example-app/blob/master/README.md
 
 
-export PDIR=/home/jabdussa/cheatrz
+export PDIR=/Users/anwarabdus-samad/github.com/jabdussa/REPO/scalajs/BRAN/workbench-example
 
-cd $PDIR/samples 
+mkdir -p $PDIR
 
-git clone https://github.com/lihaoyi/workbench-example-app
+cd $PDIR
 
-# git config 
-
-cd workbench-example-app
+git clone -b "master" --single-branch ssh://git@github.com/lihaoyi/workbench-example-app .
 
 sbt ~fastOptJS
-
 

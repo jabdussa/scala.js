@@ -1,15 +1,21 @@
+import com.lihaoyi.workbench.Plugin._
+
 enablePlugins(ScalaJSPlugin)
 
-name := "WWW.CHEATRZ.COM"
+workbenchSettings
 
-scalaVersion := "2.11.8"
+name := "Example"
+
+version := "0.1-SNAPSHOT"
+
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-  "be.doeraene" %%% "scalajs-jquery" % "0.9.0",
-  "com.lihaoyi" %% "scalatags" % "0.6.1"
+  "org.scala-js" %%% "scalajs-dom" % "0.8.2",
+  "com.lihaoyi" %%% "scalatags" % "0.5.4"
 )
 
-//jsDependencies += RuntimeDOM
+bootSnippet := "example.ScalaJSExample().main(document.getElementById('canvas'));"
 
-//OpersistLauncher := true
+updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
+
