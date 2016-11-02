@@ -1,3 +1,3 @@
 
 
-http://www.lihaoyi.com/workbench-example-app/todo.html
+http://blog.scalac.io/2015/09/24/scala_js.html

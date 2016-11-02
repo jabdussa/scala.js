@@ -1,146 +1,132 @@
 package example
 
+import scala.scalajs.js.Date
+
 import org.scalajs.dom
+import dom.html
+import org.scalajs.dom.html.{Div, Button, Input}
+import org.scalajs.dom.raw.MouseEvent
+import scala.util.Try
+import scalajs.js.annotation.JSExport
 import scalatags.JsDom.all._
-
-import scalatags.JsDom.tags2.section
+import upickle.default._
 import rx._
-import scala.scalajs.js.annotation.JSExport
-import scala.Some
+import dom.ext._
+import scala.scalajs
+  .concurrent
+  .JSExecutionContext
+  .Implicits
+  .runNow
 
-
-case class Task(txt: Var[String], done: Var[Boolean])
 @JSExport
-object ScalaJSExample {
-  import Framework._
+object ScalaJSExample extends Reactive {
 
-  val editing = Var[Option[Task]](None)
+  var thingsToDo = Var[List[Task]](List.empty)
+  val thingsToDoList = div().render
 
-  val tasks = Var(
-    Seq(
-      Task(Var("TodoMVC Task A"), Var(true)),
-      Task(Var("TodoMVC Task B"), Var(false)),
-      Task(Var("TodoMVC Task C"), Var(false))
-    )
-  )
-
-  val filter = Var("All")
-
-  val filters = Map[String, Task => Boolean](
-    ("All", t => true),
-    ("Active", !_.done()),
-    ("Completed", _.done())
-  )
-
-  val done = Rx{tasks().count(_.done())}
-
-  val notDone = Rx{tasks().length - done()}
-
-  val inputBox = input(
-    id:="new-todo",
-    placeholder:="What needs to be done?",
-    autofocus:=true
-  ).render
+  val addDesc = input("New Task").render
+  val addTime = input("0").render
+  val addButton = button("Add a new task", `type`:="button", `class`:="btn btn-primary", marginTop:=10, marginBottom:=10).render
+  val timeSummary = div().render
 
   @JSExport
-  def main(): Unit = {
-    dom.document.body.innerHTML = ""
-    dom.document.body.appendChild(
-      section(id:="todoapp")(
-        header(id:="header")(
-          h1("todos"),
-          form(
-            inputBox,
-            onsubmit := { () =>
-              tasks() = Task(Var(inputBox.value), Var(false)) +: tasks()
-              inputBox.value = ""
-              false
-            }
-          )
-        ),
-        section(id:="main")(
-          input(
-            id:="toggle-all",
-            `type`:="checkbox",
-            cursor:="pointer",
-            onclick := { () =>
-              val target = tasks().exists(_.done() == false)
-              Var.set(tasks().map(_.done -> target): _*)
-            }
+  def main(target: html.Div): Unit = {
+    println(s"main")
+
+    fetchData().onSuccess {
+      case s =>
+        println(s"Got ${s.responseText}")
+        thingsToDo() = read[List[Task]](s.responseText)
+    }
+
+    target.appendChild(
+      rebuildUI(target, addDesc, addTime, addButton)
+    )
+
+    /// create chain of reactive variables
+    val mouseVar = everyClick(addButton)
+    val addTodo = Obs(mouseVar) {
+      val desc = addDesc.value
+      val time = Try{ addTime.value.toInt }.toOption.getOrElse(0)
+      println(s"Adding $desc/$time")
+      addNewTodo(desc, time)
+    }
+
+    val timeVar = everySecond()
+    val todoTimeCount = Rx {
+      thingsToDo().foldLeft(0)((x, y) => x + y.time)
+    }
+    val todoCount = Rx {
+      thingsToDo().length
+    }
+    val updateTimeSummary = Rx {
+      refreshTimeSummary(timeVar(), todoTimeCount())
+    }
+    val updateTimeSummaryStyle = Rx {
+      val count = todoCount()
+      if(count >= 5) {
+        timeSummary.style.backgroundColor = Color.Red
+      } else {
+        timeSummary.style.backgroundColor = Color.White
+      }
+    }
+    val updateTodoList = Rx {
+      refreshTodoList(target, thingsToDo())
+    }
+  }
+
+  def addNewTodo(desc: String, time: Int): Unit = {
+    thingsToDo() = Task(desc, time) :: thingsToDo()
+  }
+
+  def refreshTodoList(target: Div, todos: List[Task]) = {
+    thingsToDoList.innerHTML = ""
+    thingsToDoList.appendChild(
+      ul(
+        for (it <- todos) yield
+        li(
+          div(
+            s"${it.desc} takes ${it.time} minutes",
+            createDeleteButton(target, it)
           ),
-          label(`for`:="toggle-all", "Mark all as complete"),
-          Rx {
-            ul(id := "todo-list")(
-              for (task <- tasks() if filters(filter())(task)) yield {
-                val inputRef = input(`class` := "edit", value := task.txt()).render
-
-                li(
-                  `class` := Rx{
-                    if (task.done()) "completed"
-                    else if (editing() == Some(task)) "editing"
-                    else ""
-                  },
-                  div(`class` := "view")(
-                    ondblclick := { () =>
-                      editing() = Some(task)
-                    },
-                    input(
-                      `class` := "toggle",
-                      `type` := "checkbox",
-                      cursor := "pointer",
-                      onchange := { () =>
-                        task.done() = !task.done()
-                      },
-                      if (task.done()) checked := true
-                    ),
-                    label(task.txt()),
-                    button(
-                      `class` := "destroy",
-                      cursor := "pointer",
-                      onclick := { () =>tasks() = tasks().filter(_ != task) }
-                    )
-                  ),
-                  form(
-                    onsubmit := { () =>
-                      task.txt() = inputRef.value
-                      editing() = None
-                      false
-                    },
-                    inputRef
-                  )
-                )
-              }
-            )
-          },
-          footer(id:="footer")(
-            span(id:="todo-count")(strong(notDone), " item left"),
-
-            ul(id:="filters")(
-              for ((name, pred) <- filters.toSeq) yield {
-                li(a(
-                  `class`:=Rx{
-                    if(name == filter()) "selected"
-                    else ""
-                  },
-                  name,
-                  href:="#",
-                  onclick := {() => filter() = name}
-                ))
-              }
-            ),
-            button(
-              id:="clear-completed",
-              onclick := { () => tasks() = tasks().filter(!_.done()) },
-              "Clear completed (", done, ")"
-            )
-          )
+          `class` := "list-group-item"
         ),
-        footer(id:="info")(
-          p("Double-click to edit a todo"),
-          p(a(href:="https://github.com/lihaoyi/workbench-example-app/blob/todomvc/src/main/scala/example/ScalaJSExample.scala")("Source Code")),
-          p("Created by ", a(href:="http://github.com/lihaoyi")("Li Haoyi"))
-        )
+        `class` := "list-group"
       ).render
     )
   }
+
+  def fetchData() = Ajax.get("https://sizzling-torch-788.firebaseio.com/dummyTask.json")
+
+  def rebuildUI(target: html.Div, addDesc: Input, addTime: Input, addButton: Button): Div =
+    div(
+      h1("Scala.js organizer"),
+      thingsToDoList,
+      addForm,
+      timeSummary,
+      `class`:="col-sm-4"
+    ).render
+
+  def createDeleteButton(target: Div, it: Task) = {
+    val b = button("X", `class`:="btn btn-sm btn-danger", float.right, marginTop:= -5).render
+    b.onclick = (_: MouseEvent) => {
+      thingsToDo() = thingsToDo().filterNot(_ == it)
+    }
+    b
+  }
+
+  val addForm = Array(
+    div(addDesc, addTime),
+    div(addButton)
+  )
+
+  def format(d: Date) = s"${d.getHours()}:${d.getMinutes()}"
+  def refreshTimeSummary(timestamp: Double, timeNeeded: Int) = {
+    val now: Date = new Date(timestamp)
+    val endDate = new Date(timestamp + timeNeeded*60000)
+
+    timeSummary.innerHTML = s"${format(now)} + ${timeNeeded} minutes on tasks = ${format(endDate)}"
+  }
 }
+
+case class Task(desc: String, time: Int)

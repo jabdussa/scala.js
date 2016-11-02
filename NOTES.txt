@@ -1,3 +1,6 @@
 
+Blog Article
+http://blog.scalac.io/2015/09/24/scala_js.html
 
-http://www.lihaoyi.com/workbench-example-app/todo.html
+Source Code
+https://github.com/pjazdzewski1990/scala-js-organizer-example
